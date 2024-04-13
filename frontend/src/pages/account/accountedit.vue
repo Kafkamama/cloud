@@ -1,0 +1,162 @@
+<template>
+    <main class="main-page" id="">
+        <template v-if="pageReady">
+            <section class="page-section " >
+                <div class="container">
+                    <div class="row q-col-gutter-x-md">
+                        <div  class="col-md-9 col-12 comp-grid" >
+                            <div >
+                                <q-card  :flat="isSubPage" class="q-pa-md nice-shadow-6">
+                                    <q-form ref="observer"  @submit.prevent="submitForm()">
+                                    <!--[form-content-start]-->
+                                    <div class="row q-col-gutter-x-md">
+                                        <div class="col-12">
+                                            <div class="row">
+                                                <div class="col-sm-3 col-12">
+                                                    {{ $t('name') }} *
+                                                </div>
+                                                <div class="col-sm-9 col-12">
+                                                    <q-input   ref="ctrlname" v-model.trim="formData.name"  :label="$t('name')" type="text" :placeholder="$t('enterName')"      
+                                                    class="" :error="isFieldValid('name')" :error-message="getFieldError('name')">
+                                                    </q-input>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--[form-content-end]-->
+                                    <div v-if="showSubmitButton" class="text-center q-my-md">
+                                        <q-btn    :rounded="false"  color="primary"  no-caps  unelevated   type="submit" icon-right="send" :loading="saving">
+                                            {{ submitButtonLabel }}
+                                            <template v-slot:loading>
+                                                <q-spinner-oval />
+                                            </template>
+                                        </q-btn>
+                                    </div>
+                                    </q-form>
+                                    <slot :submit="submitForm" :saving="saving"></slot>
+                                </q-card>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </template>
+        <template v-if="loading">
+            <div style="min-height:200px" class="q-pa-sm text-center relative-position">
+                <q-inner-loading color="primary" :label="$t('loading')" showing></q-inner-loading>
+            </div>
+        </template>
+    </main>
+</template>
+<script setup>
+	import {  computed, ref, reactive, toRefs } from 'vue';
+	import { required, } from 'src/services/validators';
+	import { useMeta } from 'quasar';
+	import { useApp } from 'src/composables/app';
+	import { $t } from 'src/services/i18n';
+	import { useEditPage } from 'src/composables/editpage';
+	import { usePageStore } from 'src/stores/page';
+	
+	const props = defineProps({
+		id: [String, Number],
+		pageName: {
+			type: String,
+			default: 'teacher',
+		},
+		pageStoreKey: {
+			type: String,
+			default: 'ACCOUNT',
+		},
+		routeName: {
+			type: String,
+			default: 'teacheraccountedit',
+		},
+		pagePath: {
+			type : String,
+			default : 'account/edit',
+		},
+		apiPath: {
+			type: String,
+			default: 'account/edit',
+		},
+		submitButtonLabel: {
+			type: String,
+			default: () => $t('update'),
+		},
+		msgTitle: {
+			type: String,
+			default: $t('updateRecord'),
+		},
+		msgBeforeSave: {
+			type: String,
+			default: () => $t(''),
+		},
+		msgAfterSave: {
+			type: String,
+			default: () => $t('recordUpdatedSuccessfully'),
+		},
+		formValidationError: {
+			type: String,
+			default: $t('formIsInvalid'),
+		},
+		formValidationMsg: {
+			type: String,
+			default: $t('pleaseCompleteTheForm'),
+		},
+		showHeader: {
+			type: Boolean,
+			default: true,
+		},
+		showSubmitButton: {
+			type: Boolean,
+			default: true,
+		},
+		redirect: {
+			type : Boolean,
+			default : true,
+		},
+		isSubPage: {
+			type : Boolean,
+			default : false,
+		},
+	});
+	
+	const store = usePageStore(props.pageStoreKey);
+	const app = useApp();
+	
+	const formDefaultValues = Object.assign({
+		name: "", 
+	}, props.pageData);
+	
+	const formData = reactive({ ...formDefaultValues });
+	
+	//event raised after form submit
+	function afterSubmit(response) {
+		app.flashMsg(props.msgTitle, props.msgAfterSave);
+		location.reload();
+	}
+	
+	//vuelidate form validation rules
+	const rules = computed(() => {
+		return {
+			name: { required }
+		}
+	});
+	
+	const page = useEditPage({ store, props, formData, rules, afterSubmit });
+	
+	const {  saving, loading, pageReady,   } = toRefs(page.state);
+	
+	const {  currentRecord: editRecord } = toRefs(store.state);
+	
+	const { load, submitForm, isFieldValid, getFieldError,  } = page.methods;
+	
+	useMeta(() => {
+		return {
+			//set browser title
+			title: $t('myAccount')
+		}
+	});
+</script>
+<style scoped>
+</style>

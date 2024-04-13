@@ -1,0 +1,22 @@
+
+<div id="report-title"><h1>Course Resource</h1></div>
+<table class="table table-sm table-striped">
+    <thead>
+        <tr>
+            <th>Resource Id</th>
+            <th>Course Id</th>
+            <th>Resource Type</th>
+            <th>Resource Url</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% records.forEach(function(record){ %>
+        <tr>
+            <td><%= record.resource_id %></td>
+            <td><%= record.course_id %></td>
+            <td><%= record.resource_type %></td>
+            <td><%= record.resource_url %></td>
+        </tr>
+        <% }); %>
+    </tbody>
+</table>
